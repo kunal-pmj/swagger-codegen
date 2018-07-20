@@ -1,8 +1,13 @@
 import { NgModule, ModuleWithProviders, SkipSelf, Optional } from '@angular/core';
-import { Configuration } from './configuration';
+import { Configuration } from '{{#isSubModule}}.{{/isSubModule}}./configuration';
 {{#useHttpClient}}import { HttpClient } from '@angular/common/http';{{/useHttpClient}}
 {{^useHttpClient}}import { Http } from '@angular/http';{{/useHttpClient}}
 
+{{#hasSubModules}}
+{{#subModules}}
+import { {{key}} } from './{{value}}';
+{{/subModules}}
+{{/hasSubModules}}
 {{#apiInfo}}
 {{#apis}}
 import { {{classname}} } from './{{importPath}}';
@@ -10,25 +15,32 @@ import { {{classname}} } from './{{importPath}}';
 {{/apiInfo}}
 
 @NgModule({
-  imports:      [],
+  imports:      [{{#hasSubModules}}{{#subModules}} {{key}},{{/subModules}}{{/hasSubModules}}],
   declarations: [],
   exports:      [],
   providers: [
-    {{#apiInfo}}{{#apis}}{{classname}}{{#hasMore}},
+    {{#apiInfo}}{{#apis}}{{classname}}{{#hasMore}},    
     {{/hasMore}}{{/apis}}{{/apiInfo}} ]
-})
-export class ApiModule {
+  })
+
+export class {{#hasModuleName}}{{{moduleName}}}{{/hasModuleName}}{{^hasModuleName}}ApiModule{{/hasModuleName}} {
     public static forRoot(configurationFactory: () => Configuration): ModuleWithProviders {
         return {
-            ngModule: ApiModule,
-            providers: [ { provide: Configuration, useFactory: configurationFactory } ]
+            ngModule: {{#hasModuleName}}{{{moduleName}}}{{/hasModuleName}}{{^hasModuleName}}ApiModule{{/hasModuleName}},
+            providers: [ { provide: Configuration, useFactory: configurationFactory }
+            {{#hasSubModules}}
+            {{#subModules}}
+            ,{{key}}.forRoot(configurationFactory).providers
+            {{/subModules}}
+            {{/hasSubModules}}
+             ]
         };
     }
 
-    constructor( @Optional() @SkipSelf() parentModule: ApiModule,
+    constructor( @Optional() @SkipSelf() parentModule: {{#hasModuleName}}{{{moduleName}}}{{/hasModuleName}}{{^hasModuleName}}ApiModule{{/hasModuleName}},
                  @Optional() http: {{#useHttpClient}}HttpClient{{/useHttpClient}}{{^useHttpClient}}Http{{/useHttpClient}}) {
         if (parentModule) {
-            throw new Error('ApiModule is already loaded. Import in your base AppModule only.');
+            throw new Error('{{#hasModuleName}}{{{moduleName}}}{{/hasModuleName}}{{^hasModuleName}}ApiModule{{/hasModuleName}} is already loaded. Import in your base AppModule only.');
         }
         if (!http) {
             throw new Error('You need to import the {{#useHttpClient}}HttpClientModule{{/useHttpClient}}{{^useHttpClient}}HttpModule{{/useHttpClient}} in your AppModule! \n' +

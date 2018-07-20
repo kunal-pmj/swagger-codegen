@@ -5,13 +5,13 @@ import { Inject, Injectable, Optional }                      from '@angular/core
 {{#useHttpClient}}
 import { HttpClient, HttpHeaders, HttpParams,
          HttpResponse, HttpEvent }                           from '@angular/common/http';
-import { CustomHttpUrlEncodingCodec }                        from '../encoder';
+import { CustomHttpUrlEncodingCodec }                        from '{{#isSubModule}}../{{/isSubModule}}../encoder';
 {{/useHttpClient}}
 {{^useHttpClient}}
 import { Http, Headers, URLSearchParams }                    from '@angular/http';
 import { RequestMethod, RequestOptions, RequestOptionsArgs } from '@angular/http';
 import { Response, ResponseContentType }                     from '@angular/http';
-import { CustomQueryEncoderHelper }                          from '../encoder';
+import { CustomQueryEncoderHelper }                          from '{{#isSubModule}}../{{/isSubModule}}../encoder';
 {{/useHttpClient}}
 
 {{^useRxJS6}}
@@ -28,8 +28,8 @@ import '../rxjs-operators';
 import { {{classname}} } from '../{{filename}}';
 {{/imports}}
 
-import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
-import { Configuration }                                     from '../configuration';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '{{#isSubModule}}../{{/isSubModule}}../variables';
+import { Configuration }                                     from '{{#isSubModule}}../{{/isSubModule}}../configuration';
 {{#withInterfaces}}
 import { {{classname}}Interface }                            from './{{classFilename}}Interface';
 {{/withInterfaces}}

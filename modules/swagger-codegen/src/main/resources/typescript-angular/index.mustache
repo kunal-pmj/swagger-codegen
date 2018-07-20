@@ -1,5 +1,9 @@
+{{^hasSubModules}}
 export * from './api/api';
 export * from './model/models';
+{{/hasSubModules}}
+{{^isSubModule}}
 export * from './variables';
 export * from './configuration';
+{{/isSubModule}}
 export * from './api.module';

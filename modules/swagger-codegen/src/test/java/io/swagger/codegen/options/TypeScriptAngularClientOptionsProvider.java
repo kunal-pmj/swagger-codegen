@@ -1,8 +1,8 @@
 package io.swagger.codegen.options;
 
-import com.google.common.collect.ImmutableMap;
-
 import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
 
 import io.swagger.codegen.CodegenConstants;
 import io.swagger.codegen.languages.TypeScriptAngularClientCodegen;
@@ -17,7 +17,9 @@ public class TypeScriptAngularClientOptionsProvider implements OptionsProvider {
     private static final String NPM_REPOSITORY = "https://registry.npmjs.org";
     public static final String ALLOW_UNICODE_IDENTIFIERS_VALUE = "false";
     public static final String NG_VERSION = "2";
-
+    public static final String IS_SUB_MODULE = "false";
+    public static final String MODULE_NAME = "ApiModule";
+    public static final String SUB_MODULES = "{\"CISApiModule\":\"./cis-api/index\",\"CONTENTApiModule\":\"./content-api/index\"}";
 
     @Override
     public String getLanguage() {
@@ -39,7 +41,10 @@ public class TypeScriptAngularClientOptionsProvider implements OptionsProvider {
                 .put(TypeScriptAngularClientCodegen.TAGGED_UNIONS, Boolean.FALSE.toString())
                 .put(TypeScriptAngularClientCodegen.NPM_REPOSITORY, NPM_REPOSITORY)
                 .put(TypeScriptAngularClientCodegen.NG_VERSION, NG_VERSION)
-                .put(CodegenConstants.ALLOW_UNICODE_IDENTIFIERS, ALLOW_UNICODE_IDENTIFIERS_VALUE)
+                .put(TypeScriptAngularClientCodegen.IS_SUB_MODULE, IS_SUB_MODULE)
+                .put(TypeScriptAngularClientCodegen.MODULE_NAME, MODULE_NAME)
+                .put(TypeScriptAngularClientCodegen.SUB_MODULES, SUB_MODULES)
+                .put(CodegenConstants.ALLOW_UNICODE_IDENTIFIERS, ALLOW_UNICODE_IDENTIFIERS_VALUE)                
                 .build();
     }
 

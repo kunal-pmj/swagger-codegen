@@ -9,15 +9,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenModel;
-import io.swagger.codegen.CodegenParameter;
 import io.swagger.codegen.CodegenOperation;
+import io.swagger.codegen.CodegenParameter;
 import io.swagger.codegen.SupportingFile;
 import io.swagger.codegen.utils.SemVer;
 import io.swagger.models.ModelImpl;
-import io.swagger.models.properties.*;
+import io.swagger.models.properties.BooleanProperty;
+import io.swagger.models.properties.FileProperty;
+import io.swagger.models.properties.ObjectProperty;
+import io.swagger.models.properties.Property;
 
 public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCodegen {
     private static final SimpleDateFormat SNAPSHOT_SUFFIX_FORMAT = new SimpleDateFormat("yyyyMMddHHmm");
@@ -30,13 +34,28 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     public static final String WITH_INTERFACES = "withInterfaces";
     public static final String TAGGED_UNIONS ="taggedUnions";
     public static final String NG_VERSION = "ngVersion";
+
+    
+    public static final String IS_SUB_MODULE = "isSubModule";
+    public static final String MODULE_NAME = "moduleName";
+    public static final String HAS_MODULE_NAME = "hasModuleName";
+    public static final String SUB_MODULES = "subModules";
+    public static final String HAS_SUB_MODULES = "hasSubModules";
+    
+
     public static final String PROVIDED_IN_ROOT ="providedInRoot";
+
 
     protected String npmName = null;
     protected String npmVersion = "1.0.0";
     protected String npmRepository = null;
-
     private boolean taggedUnions = false;
+    
+    protected Boolean isSubModule = false;
+    protected Boolean hasModuleName = false;
+    protected Boolean hasSubModules = false;
+    protected String moduleName = null;
+    protected Map<String, String> subModules = null;
 
     public TypeScriptAngularClientCodegen() {
         super();
@@ -68,6 +87,10 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
             "Use this property to provide Injectables in root (it is only valid in angular version greater or equal to 6.0.0).",
             BooleanProperty.TYPE).defaultValue(Boolean.FALSE.toString()));
         this.cliOptions.add(new CliOption(NG_VERSION, "The version of Angular. Default is '4.3'"));
+        
+        this.cliOptions.add(new CliOption(IS_SUB_MODULE, "Set this to true, If the generated bindings would be used as a sub Module to an existing SDK"));
+        this.cliOptions.add(new CliOption(MODULE_NAME, "Provide a Module Name if you want to override default name 'ApiModule'"));
+        this.cliOptions.add(new CliOption(SUB_MODULES, "Provide the list of Sub Modules in following Format {\"ModuleName\":\"Path to Modules index.ts file\"}, e.g : {\"ABCApiModule\":\"./abc-api/index\"}"));
     }
 
     @Override
@@ -89,19 +112,37 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     @Override
     public void processOpts() {
         super.processOpts();
+        if(additionalProperties.containsKey(IS_SUB_MODULE)) {
+        	this.setIsModule(Boolean.parseBoolean(additionalProperties.get(IS_SUB_MODULE).toString()));
+        }        
+        if(additionalProperties.containsKey(MODULE_NAME)) {
+        	Object moduleName = additionalProperties.get(MODULE_NAME);
+        	if(null != moduleName && !((String)moduleName).isEmpty()) {
+        		this.setModuleName(moduleName.toString());
+        		this.setHasModuleName(true);
+        		additionalProperties.put(HAS_MODULE_NAME, true);
+        	}
+        }
+        if(additionalProperties.containsKey(SUB_MODULES)) {
+        	additionalProperties.put(SUB_MODULES,
+        			getSubModulesMap(additionalProperties.get(SUB_MODULES)));        	
+        	additionalProperties.put(HAS_SUB_MODULES, this.hasSubModules());
+        }
         supportingFiles.add(
                 new SupportingFile("models.mustache", modelPackage().replace('.', File.separatorChar), "models.ts"));
         supportingFiles
                 .add(new SupportingFile("apis.mustache", apiPackage().replace('.', File.separatorChar), "api.ts"));
-        supportingFiles.add(new SupportingFile("index.mustache", getIndexDirectory(), "index.ts"));
         supportingFiles.add(new SupportingFile("api.module.mustache", getIndexDirectory(), "api.module.ts"));
-        supportingFiles.add(new SupportingFile("configuration.mustache", getIndexDirectory(), "configuration.ts"));
-        supportingFiles.add(new SupportingFile("variables.mustache", getIndexDirectory(), "variables.ts"));
-        supportingFiles.add(new SupportingFile("encoder.mustache", getIndexDirectory(), "encoder.ts"));
-        supportingFiles.add(new SupportingFile("gitignore", "", ".gitignore"));
-        supportingFiles.add(new SupportingFile("git_push.sh.mustache", "", "git_push.sh"));
-        supportingFiles.add(new SupportingFile("README.mustache", getIndexDirectory(), "README.md"));
-
+        supportingFiles.add(new SupportingFile("index.mustache", getIndexDirectory(), "index.ts"));
+        if(!this.isSubModule()) 
+        {
+	        supportingFiles.add(new SupportingFile("configuration.mustache", getIndexDirectory(), "configuration.ts"));
+	        supportingFiles.add(new SupportingFile("variables.mustache", getIndexDirectory(), "variables.ts"));
+	        supportingFiles.add(new SupportingFile("encoder.mustache", getIndexDirectory(), "encoder.ts"));
+	        supportingFiles.add(new SupportingFile("gitignore", "", ".gitignore"));
+	        supportingFiles.add(new SupportingFile("git_push.sh.mustache", "", "git_push.sh"));
+	        supportingFiles.add(new SupportingFile("README.mustache", getIndexDirectory(), "README.md"));
+        }
         // determine NG version
         SemVer ngVersion;
         if (additionalProperties.containsKey(NG_VERSION)) {
@@ -459,5 +500,42 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         String name = filename.substring((modelPackage() + "/").length());
         return camelize(name);
     }
-
+    public Boolean isSubModule() {
+        return this.isSubModule;
+    }
+    public void setIsModule(boolean isSubModule) {
+        this.isSubModule = isSubModule;
+    }
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
+    public String getModuleName() {
+        return this.moduleName;
+    }
+    public void setHasModuleName(boolean hasModuleName) {
+        this.hasModuleName = hasModuleName;
+    }
+    public Boolean hasModuleName() {
+        return this.hasModuleName;
+    }
+    public void setHasSubModules(boolean hasSubModules) {
+        this.hasSubModules = hasSubModules;
+    }
+    public Boolean hasSubModules() {
+        return this.hasSubModules;
+    }
+    private Set<Map.Entry<String, Object>> getSubModulesMap(Object subModule){
+    	if(null == subModule || ((String)subModule).isEmpty()) {
+    		this.setHasSubModules(false);
+    		return null;
+    	}
+    	StringTokenizer tokens = new StringTokenizer(subModule.toString(), ",");
+    	Map<String, Object> subModuleWithPath = new HashMap<String, Object>();
+    	for (int i= 0; tokens.hasMoreTokens(); i++) {
+    		String[] keyValue = tokens.nextToken().split(":");
+    		subModuleWithPath.put(keyValue[0], keyValue[1]);
+		}
+    	this.setHasSubModules(true);
+    	return subModuleWithPath.entrySet();
+    }    
 }
