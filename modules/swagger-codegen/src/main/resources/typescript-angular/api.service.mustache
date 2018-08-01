@@ -134,12 +134,15 @@ export class {{classname}} {
     {{/useHttpClient}}
 {{#allParams}}
 {{#required}}
+
         {{#isConstEnumParam}}
         let {{paramName}} = {{{dataType}}};
         {{/isConstEnumParam}}
+        {{^isConstEnumParam}}
         if ({{paramName}} === null || {{paramName}} === undefined) {
             throw new Error('Required parameter {{paramName}} was null or undefined when calling {{nickname}}.');
         }
+        {{/isConstEnumParam}}
 {{/required}}
 {{/allParams}}
 
