@@ -133,8 +133,12 @@ export class {{classname}} {
     public {{nickname}}WithHttpInfo({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}extraHttpRequestParams?: RequestOptionsArgs): Observable<Response> {
     {{/useHttpClient}}
 {{#allParams}}
-{{#required}}
 
+{{#required}}
+<<<<<<< HEAD
+
+=======
+>>>>>>> 9544f725cd7d2da09c8da42ac5bc84c0bb4c05af
         {{#isConstEnumParam}}
         let {{paramName}} = {{{dataType}}};
         {{/isConstEnumParam}}
