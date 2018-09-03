@@ -10,6 +10,20 @@
   {{>js_prettify}}
   {{>js_bootstrap}}
   {{>marked}}
+  <style type="text/css" media="screen">
+  .ace_editor {
+    width: 80%;
+    font-family:monospace!important;
+    position: top;
+  }
+  code {
+    font-family: monospace;
+}
+</style>
+<!-- load ace -->
+<script src="./src/ace.js"></script>
+<!-- load ace themelist extension -->
+<script src="./src/ext-themelist.js"></script>
   <script>
     $( document ).ready(function() {
       marked.setOptions({
@@ -37,7 +51,6 @@
         }
 
         textFile = window.URL.createObjectURL(data);
-
         var a = document.createElement("a");
         document.body.appendChild(a);
         a.style = "display: none";
@@ -101,21 +114,6 @@
       //Convert elements with "marked" class to markdown
       processMarked();
     });
-    function copyToClipboard(element) {
-        try {
-            console.log($( element ).find(".active")[0].innerText);
-            var textArea = document.createElement( "textarea" );
-            textArea.value = $( element ).find(".active")[0].innerText;
-            document.body.appendChild( textArea );
-            textArea.select();
-            var successful = document.execCommand("copy");
-            var msg = successful ? 'successful' : 'unsuccessful';
-            console.log('Copying sample code was ' + msg);
-       } catch (err) {
-          console.log('Error, Copying Code Snippet');
-       }
-       document.body.removeChild(textArea);
-     }
   </script>
   <style type="text/css">
   {{>css_bootstrap}}
@@ -125,11 +123,67 @@
 </head>
 <body>
   <script>
+  function copyToClipboard(element) {
+      try {
+          console.log($( element ).find(".active")[0].innerText);
+          var textArea = document.createElement( "textarea" );
+          textArea.value = $( element ).find(".active")[0].innerText;
+          document.body.appendChild( textArea );
+          textArea.select();
+          var successful = document.execCommand("copy");
+          var msg = successful ? 'successful' : 'unsuccessful';
+          console.log('Copying sample code was ' + msg);
+     } catch (err) {
+        console.log('Error, Copying Code Snippet');
+     }
+     document.body.removeChild(textArea);
+   }
+  function tryItOut(element) {
+      try {
+          console.log($( element ));
+          var textArea = document.createElement( "textarea" );
+          textArea.value = $( element ).find(".active")[0].innerText;
+          document.body.appendChild( textArea );
+          textArea.select();
+          var successful = document.execCommand("copy");
+          var msg = successful ? 'successful' : 'unsuccessful';
+          console.log('running sample code was ' + msg);
+          var resultValueElement = element.replace("#tab-content-", "#result-");
+          var resultsElement = element.replace("#tab-content-", "#results-");
+          $.ajax({url: "/api", success: function(result){
+              $(resultValueElement).html(result);
+              $(resultsElement).css({"visibility":"visible", "display":"block"});
+          }});
+     } catch (err) {
+        console.log('Error, Running Code Snippet');
+     }
+     document.body.removeChild(textArea);
+   }
+  function getModeFromApiCodeID(elementName) {
+      var startIndex = elementName.lastIndexOf("-")+1;
+      var endIndex = elementName.length;
+      var returnValue = elementName.substring(startIndex, endIndex);
+      return (returnValue == "curl" ? "sh" : returnValue);
+  }
+
+  function initEditor(element){
+      var modeName = getModeFromApiCodeID(element);
+      var editor = ace.edit(element);
+      editor.setTheme("ace/theme/twilight");
+      editor.container.style.fontFamily = "monospace!important";
+      editor.session.setMode("ace/mode/"+modeName);
+      editor.renderer.setShowGutter(false);
+      editor.renderer.setScrollMargin(10, 10);
+      editor.setOptions({
+          autoScrollEditorIntoView: true,
+          wrap:true
+      });
+  }
     // Script section to load models into a JS Var
-    var defs = {}
+    var definitions = {}
         {{#models}}
         {{#model}}
-            defs.{{name}} = {{{modelJson}}};
+        definitions.{{name}} = {{{modelJson}}};
         {{/model}}
     {{/models}}
   </script>
@@ -212,27 +266,38 @@
                         </ul>
                         <div id="tab-content-{{baseName}}-{{nickname}}-0" class="tab-content">
                           <div class="tab-pane active" id="examples-{{baseName}}-{{nickname}}-0-curl">
-                            <pre class="prettyprint"><code class="language-bsh">curl -X {{vendorExtensions.x-codegen-httpMethodUpperCase}}{{#authMethods}}{{#isApiKey}}{{#isKeyInHeader}} -H "{{keyParamName}}: [[apiKey]]"{{/isKeyInHeader}}{{/isApiKey}}{{#isBasic}}{{#hasProduces}} -H "Accept: {{#produces}}{{{mediaType}}}{{#hasMore}},{{/hasMore}}{{/produces}}"{{/hasProduces}}{{#hasConsumes}} -H "Content-Type: {{#consumes}}{{{mediaType}}}{{#hasMore}},{{/hasMore}}{{/consumes}}"{{/hasConsumes}} -H "Authorization: Basic [[basicHash]]"{{/isBasic}}{{/authMethods}} "{{basePath}}{{path}}{{#hasQueryParams}}?{{#queryParams}}{{^-first}}&{{/-first}}{{baseName}}={{vendorExtensions.x-eg}}{{/queryParams}}{{/hasQueryParams}}"</code></pre>
+                            <pre class="prettyprint language-bsh prettyprinted" id="editor-{{baseName}}-{{nickname}}-0-curl" onclick="initEditor('editor-{{baseName}}-{{nickname}}-0-curl')">curl -X {{vendorExtensions.x-codegen-httpMethodUpperCase}}{{#authMethods}}{{#isApiKey}}{{#isKeyInHeader}} -H "{{keyParamName}}: [[apiKey]]"{{/isKeyInHeader}}{{/isApiKey}}{{#isBasic}}{{#hasProduces}} -H "Accept: {{#produces}}{{{mediaType}}}{{#hasMore}},{{/hasMore}}{{/produces}}"{{/hasProduces}}{{#hasConsumes}} -H "Content-Type: {{#consumes}}{{{mediaType}}}{{#hasMore}},{{/hasMore}}{{/consumes}}"{{/hasConsumes}} -H "Authorization: Basic [[basicHash]]"{{/isBasic}}{{/authMethods}} "{{basePath}}{{path}}{{#hasQueryParams}}?{{#queryParams}}{{^-first}}&{{/-first}}{{baseName}}={{vendorExtensions.x-eg}}{{/queryParams}}{{/hasQueryParams}}"</pre>
                           </div>
                           <div class="tab-pane" id="examples-{{baseName}}-{{nickname}}-0-java">
-                            <pre class="prettyprint"><code class="language-java">{{>sample_java}}</code></pre>
+                            <pre class="prettyprint language-all prettyprinted" id="editor-{{baseName}}-{{nickname}}-0-java" onclick="initEditor('editor-{{baseName}}-{{nickname}}-0-java')">{{>sample_java}}</pre>
                           </div>
                           <div class="tab-pane" id="examples-{{baseName}}-{{nickname}}-0-python">
-                          	<pre class="prettyprint"><code class="language-python">{{>sample_python}}</code></pre>
+                            <pre class="prettyprint language-all prettyprinted" id="editor-{{baseName}}-{{nickname}}-0-python" onclick="initEditor('editor-{{baseName}}-{{nickname}}-0-python')">{{>sample_python}}</pre>
                           </div>
                           <div class="tab-pane" id="examples-{{baseName}}-{{nickname}}-0-csharp">
-                          	<pre class="prettyprint"><code class="language-cs">{{>sample_csharp}}</code></pre>
-                          </div>
+                            <pre class="prettyprint language-all prettyprinted" id="editor-{{baseName}}-{{nickname}}-0-csharp" onclick="initEditor('editor-{{baseName}}-{{nickname}}-0-csharp')">{{>sample_csharp}}</pre>
+   	                      </div>
                           <div class="tab-pane" id="examples-{{baseName}}-{{nickname}}-0-perl">
-                          	<pre class="prettyprint"><code class="language-perl">{{>sample_perl}}</code></pre>
+                          <pre class="prettyprint language-all prettyprinted" id="editor-{{baseName}}-{{nickname}}-0-perl" onclick="initEditor('editor-{{baseName}}-{{nickname}}-0-perl')">{{>sample_perl}}</pre>
                           </div>
-
-                          <button id="button_{{baseName}}-{{nickname}}" onclick="copyToClipboard('#tab-content-{{baseName}}-{{nickname}}-0')"
-                            class="btn btn-info btn-lg" type="button" data-toggle="tooltip" data-placement="button"
-                            title="Copy to Clipboard">
+                          <div id="buttons_{{baseName}}-{{nickname}}" class="btn-toolbar">
+                            <button id="copy_{{baseName}}-{{nickname}}" onclick="copyToClipboard('#tab-content-{{baseName}}-{{nickname}}-0')"
+                                    class="btn btn-info btn-lg col-sm-1" type="button" data-toggle="tooltip" title="Copy to Clipboard">
                             <i class="glyphicons glyphicons-copy"></i>Copy to Clipboard</button>
+                            <button id="run_{{baseName}}-{{nickname}}" onclick="tryItOut('#tab-content-{{baseName}}-{{nickname}}-0')"
+                                    class="btn btn-primary col-sm-1" data-toggle="tooltip" title="Try it out !!">
+                            <i class="glyphicons glyphicons-copy"></i>Try it Out!!</button>
+                           </div>
+                           <div id="results-{{baseName}}-{{nickname}}-0" class="invisible hide">
+                           	   <h2 id="results-header-{{baseName}}-{{nickname}}-0" class="text-success">Sample Result</h2>
+                               <ul class="nav nav-tabs nav-tabs-examples">
+                                   <li class="active">
+                                     <a href="#result-{{baseName}}-{{nickname}}-0">Sample Response</a>
+                                   </li>
+                               </ul>
+                               <div class="tab-pane active" id="result-{{baseName}}-{{nickname}}-0" style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">Hello Boss</div>
                           </div>
-
+                          </div>
                           <h2>Parameters</h2>
                           {{#hasPathParams}}
                             <div class="methodsubtabletitle">Path parameters</div>
@@ -333,7 +398,7 @@
                                         if (schema.$ref != null) {
                                           schema = defsParser.$refs.get(schema.$ref);
                                         } else {
-                                          schemaWrapper.definitions = defs;
+                                          schemaWrapper.definitions = definitions;
                                           $RefParser.dereference(schemaWrapper).catch(function(err) {
                                             console.log(err);
                                           });
@@ -421,7 +486,7 @@
   {{>js_webfontloader}}
   <script>
     var schemaWrapper = {};
-    schemaWrapper.definitions = defs;
+    schemaWrapper.definitions = definitions;
     defsParser = new $RefParser();
     defsParser.dereference(schemaWrapper).catch(function(err) {
       console.log(err);

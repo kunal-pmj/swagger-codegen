@@ -159,14 +159,17 @@ public class NodeJSServerCodegen extends DefaultCodegen implements CodegenConfig
 
         if (templateName.equals("service.mustache")) {
             String stringToMatch = File.separator + "controllers" + File.separator;
-            String replacement = File.separator + implFolder + File.separator;
+            String replacement = implFileFolder();
             result = result.replaceAll(Pattern.quote(stringToMatch), replacement);
         }
         return result;
     }
 
-    private String implFileFolder(String output) {
-        return outputFolder + File.separator + output + File.separator + apiPackage().replace('.', File.separatorChar);
+    private String implFileFolder() {
+        //return outputFolder + File.separator + output + File.separator + apiPackage().replace('.', File.separatorChar);
+    	String replacement = File.separator.equals("\\") ?  File.separator + File.separator : File.separator;
+    			
+    	return replacement + implFolder + replacement ;
     }
 
     /**

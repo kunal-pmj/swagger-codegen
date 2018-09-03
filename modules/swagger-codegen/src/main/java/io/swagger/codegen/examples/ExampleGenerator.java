@@ -209,7 +209,7 @@ public class ExampleGenerator {
             if (model != null) {
                 return resolveModelToExample(simpleName, mediaType, model, processedModels);
             }
-            logger.warn("Ref property with empty model.");
+            logger.warn("Ref property with empty model for :"+simpleName);
         } else if (property instanceof UUIDProperty) {
             return "046b6c7f-0b8a-43b9-b35d-6489e6daee91"; 
         }
