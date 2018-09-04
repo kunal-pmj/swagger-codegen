@@ -123,42 +123,50 @@
 </head>
 <body>
   <script>
+
   function copyToClipboard(element) {
+      var returnValue;
       try {
-          console.log($( element ).find(".active")[0].innerText);
+          returnValue = $( element ).find(".active")[0].innerText;
+          console.log(returnValue);
           var textArea = document.createElement( "textarea" );
-          textArea.value = $( element ).find(".active")[0].innerText;
+          textArea.value = returnValue; 
           document.body.appendChild( textArea );
           textArea.select();
           var successful = document.execCommand("copy");
           var msg = successful ? 'successful' : 'unsuccessful';
           console.log('Copying sample code was ' + msg);
+          document.body.removeChild(textArea);
      } catch (err) {
         console.log('Error, Copying Code Snippet');
-     }
-     document.body.removeChild(textArea);
+     }     
+     return returnValue;
    }
+  
   function tryItOut(element) {
       try {
-          console.log($( element ));
-          var textArea = document.createElement( "textarea" );
-          textArea.value = $( element ).find(".active")[0].innerText;
-          document.body.appendChild( textArea );
-          textArea.select();
-          var successful = document.execCommand("copy");
-          var msg = successful ? 'successful' : 'unsuccessful';
-          console.log('running sample code was ' + msg);
-          var resultValueElement = element.replace("#tab-content-", "#result-");
-          var resultsElement = element.replace("#tab-content-", "#results-");
-          $.ajax({url: "/api", success: function(result){
-              $(resultValueElement).html(result);
-              $(resultsElement).css({"visibility":"visible", "display":"block"});
-          }});
+          tabContentElement = "#tab-content-"+element+"-0";
+          var codeSinppet = copyToClipboard(tabContentElement);
+          var resultValueElement = "#result-"+element+"-0";
+          var resultsElement = "#results-"+element+"-0";
+          var httpmethod = $( "#httpmethod-"+element ).attr('data-type');
+          console.log(httpmethod);
+          var restURL = '/rest' + $( "#reqpath-"+element ).text();
+          console.log(restURL);
+          $.ajax({
+                    url: restURL,
+                    contentType: "application/json",
+                    type : httpmethod,
+                    success: function(result){
+                                $(resultValueElement).html(result);
+                                $(resultsElement).css({"visibility":"visible", "display":"block"});
+                             }
+                 });
      } catch (err) {
         console.log('Error, Running Code Snippet');
      }
-     document.body.removeChild(textArea);
    }
+  
   function getModeFromApiCodeID(elementName) {
       var startIndex = elementName.lastIndexOf("-")+1;
       var endIndex = elementName.length;
@@ -253,7 +261,7 @@
                         <p class="marked">{{notes}}</p>
                         <p></p>
                         <br />
-                        <pre class="prettyprint language-html prettyprinted" data-type="{{httpMethod}}"><code><span class="pln">{{path}}</span></code></pre>
+                        <pre id="httpmethod-{{baseName}}-{{nickname}}" class="prettyprint language-html prettyprinted" data-type="{{httpMethod}}"><code><span id="reqpath-{{baseName}}-{{nickname}}" class="pln">{{path}}</span></code></pre>
                         <p>
                           <h3>Usage and SDK Samples</h3>
                         </p>
@@ -284,7 +292,7 @@
                             <button id="copy_{{baseName}}-{{nickname}}" onclick="copyToClipboard('#tab-content-{{baseName}}-{{nickname}}-0')"
                                     class="btn btn-info btn-lg col-sm-1" type="button" data-toggle="tooltip" title="Copy to Clipboard">
                             <i class="glyphicons glyphicons-copy"></i>Copy to Clipboard</button>
-                            <button id="run_{{baseName}}-{{nickname}}" onclick="tryItOut('#tab-content-{{baseName}}-{{nickname}}-0')"
+                            <button id="run_{{baseName}}-{{nickname}}" onclick="tryItOut('{{baseName}}-{{nickname}}')"
                                     class="btn btn-primary col-sm-1" data-toggle="tooltip" title="Try it out !!">
                             <i class="glyphicons glyphicons-copy"></i>Try it Out!!</button>
                            </div>
