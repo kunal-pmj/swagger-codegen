@@ -150,17 +150,20 @@
           var resultValueElement = "#result-"+element+"-0";
           var resultsElement = "#results-"+element+"-0";
           var httpmethod = $( "#httpmethod-"+element ).attr('data-type');
-          console.log(httpmethod);
-          var restURL = '/rest' + $( "#reqpath-"+element ).text();
-          console.log(restURL);
+          var restURL = '/rest';
+          var urlExt = $( "#reqpath-"+element ).text();
           $.ajax({
                     url: restURL,
                     contentType: "application/json",
-                    type : httpmethod,
+                    type : 'post',
+                    data : JSON.stringify({"httpmethod" : httpmethod, "urlExt" : urlExt,
+                     "codeSnippet" : codeSinppet
+                    }),
                     success: function(result){
-                                $(resultValueElement).html(result);
-                                $(resultsElement).css({"visibility":"visible", "display":"block"});
-                             }
+	                    console.log(result);
+	                    $(resultValueElement).html(JSON.stringify(result, null, 2));
+	                    $(resultsElement).css({"visibility":"visible", "display":"block"});
+                   }
                  });
      } catch (err) {
         console.log('Error, Running Code Snippet');
@@ -297,10 +300,10 @@
                             <i class="glyphicons glyphicons-copy"></i>Try it Out!!</button>
                            </div>
                            <div id="results-{{baseName}}-{{nickname}}-0" class="invisible hide">
-                           	   <h2 id="results-header-{{baseName}}-{{nickname}}-0" class="text-success">Sample Result</h2>
+                           	   <h2 id="results-header-{{baseName}}-{{nickname}}-0" class="text-success">Code Execution Result</h2>
                                <ul class="nav nav-tabs nav-tabs-examples">
                                    <li class="active">
-                                     <a href="#result-{{baseName}}-{{nickname}}-0">Sample Response</a>
+                                     <a href="#result-{{baseName}}-{{nickname}}-0">Response</a>
                                    </li>
                                </ul>
                                <div class="tab-pane active" id="result-{{baseName}}-{{nickname}}-0" style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">Hello Boss</div>
