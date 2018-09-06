@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>{{{appName}}}</title>
+  <title id="api-_">{{{appName}}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8" />
@@ -216,7 +216,7 @@
             {{#apiInfo}}
               {{#apis}}
                 {{#operations}}
-                  <li class="nav-header" data-group="{{baseName}}"><a href="#api-{{baseName}}">API Methods - {{baseName}}</a></li>
+                  <li class="nav-header" data-group="{{baseName}}"><a href="#api-{{baseName}}">{{baseName}}</a></li>
                   {{#operation}}
                     <li data-group="{{baseName}}" data-name="{{nickname}}" class="">
                       <a href="#api-{{baseName}}-{{nickname}}">{{nickname}}</a>
@@ -236,8 +236,8 @@
           <div class="clearfix"></div>
         </div>
         <div id="header">
-          <div id="api-_">
-            <h2 id="welcome-to-apidoc">API and SDK Documentation</h2>
+          <div>
+            <h2 id="welcome-to-apidoc"></h2>
             {{#version}}
               <div class="app-desc">Version: {{{version}}}</div>
             {{/version}}
@@ -294,7 +294,7 @@
                           <div id="buttons_{{baseName}}-{{nickname}}" class="btn-toolbar">
                             <button id="copy_{{baseName}}-{{nickname}}" onclick="copyToClipboard('#tab-content-{{baseName}}-{{nickname}}-0')"
                                     class="btn btn-info btn-lg col-sm-1" type="button" data-toggle="tooltip" title="Copy to Clipboard">
-                            <i class="glyphicons glyphicons-copy"></i>COPY!</button>
+                            <i class="glyphicons glyphicons-copy"></i>COPY</button>
                             <button id="run_{{baseName}}-{{nickname}}" onclick="tryItOut('{{baseName}}-{{nickname}}')"
                                     class="btn btn-primary col-sm-1" data-toggle="tooltip" title="Try it Out!!">
                             <i class="glyphicons glyphicons-copy"></i>TRY IT OUT!</button>
