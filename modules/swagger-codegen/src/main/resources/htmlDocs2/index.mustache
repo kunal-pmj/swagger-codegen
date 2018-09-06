@@ -161,7 +161,7 @@
                     }),
                     success: function(result){
 	                    console.log(result);
-	                    $(resultValueElement).html(JSON.stringify(result, null, 2));
+	                    $(resultValueElement).html(stringify(result));
 	                    $(resultsElement).css({"visibility":"visible", "display":"block"});
                    }
                  });
@@ -294,10 +294,10 @@
                           <div id="buttons_{{baseName}}-{{nickname}}" class="btn-toolbar">
                             <button id="copy_{{baseName}}-{{nickname}}" onclick="copyToClipboard('#tab-content-{{baseName}}-{{nickname}}-0')"
                                     class="btn btn-info btn-lg col-sm-1" type="button" data-toggle="tooltip" title="Copy to Clipboard">
-                            <i class="glyphicons glyphicons-copy"></i>Copy to Clipboard</button>
+                            <i class="glyphicons glyphicons-copy"></i>COPY!</button>
                             <button id="run_{{baseName}}-{{nickname}}" onclick="tryItOut('{{baseName}}-{{nickname}}')"
-                                    class="btn btn-primary col-sm-1" data-toggle="tooltip" title="Try it out !!">
-                            <i class="glyphicons glyphicons-copy"></i>Try it Out!!</button>
+                                    class="btn btn-primary col-sm-1" data-toggle="tooltip" title="Try it Out!!">
+                            <i class="glyphicons glyphicons-copy"></i>TRY IT OUT!</button>
                            </div>
                            <div id="results-{{baseName}}-{{nickname}}-0" class="invisible hide">
                            	   <h2 id="results-header-{{baseName}}-{{nickname}}-0" class="text-success">Code Execution Result</h2>
